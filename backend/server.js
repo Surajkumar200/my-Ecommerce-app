@@ -16,12 +16,13 @@ await connectDB();
 // Middlewares
 app.use(express.json());
 app.use(cookieParser());
-app.use(
-    cors({
-        origin: process.env.CLIENT_URL,
-        credentials: true,
-    })
-);
+app.use(cors({
+    origin: "https://my-ecommerce-app-t13o.vercel.app", // your frontend domain
+    credentials: true, // allow cookies/auth headers
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"]
+}));
+
 
 // Routes
 app.use('/api/auth', authRoutes);
