@@ -1,7 +1,10 @@
 import axios from 'axios';
 
+// Get backend URL from environment variables, fallback to localhost for dev
+const API_BASE_URL = 'https://my-ecommerce-app-s4qu.onrender.com/api';
+
 const api = axios.create({
-    baseURL: 'http://localhost:5000/api',
+    baseURL: API_BASE_URL,
     withCredentials: true,
 });
 
@@ -37,8 +40,9 @@ api.interceptors.response.use(
             originalRequest._retry = true;
 
             try {
+                // Use API_BASE_URL here instead of hardcoded localhost
                 const res = await axios.post(
-                    'http://localhost:5000/api/auth/refresh-token',
+                    `${API_BASE_URL}/auth/refresh-token`,
                     {},
                     { withCredentials: true }
                 );
