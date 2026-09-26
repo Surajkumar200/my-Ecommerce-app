@@ -10,6 +10,7 @@ export default function Products() {
     description: "",
     price: "",
     stock: "",
+    imageUrl: "",
   });
   const [editingId, setEditingId] = useState(null);
   const [errors, setErrors] = useState({});
@@ -47,7 +48,13 @@ export default function Products() {
         await api.post("/products", form);
       }
 
-      setForm({ name: "", description: "", price: "", stock: "" });
+      setForm({
+        name: "",
+        description: "",
+        price: "",
+        stock: "",
+        imageUrl: "",
+      });
       setEditingId(null);
       fetchProducts();
     } catch (err) {
@@ -64,6 +71,7 @@ export default function Products() {
       description: prod.description || "",
       price: prod.price,
       stock: prod.stock,
+      imageUrl: prod.imageUrl || "",
     });
   };
 
@@ -151,7 +159,7 @@ export default function Products() {
 
             <form
               onSubmit={handleSubmit}
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
             >
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
@@ -203,6 +211,22 @@ export default function Products() {
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Image URL
+                </label>
+                <input
+                  name="imageUrl"
+                  placeholder="https://example.com/image.jpg"
+                  value={form.imageUrl}
+                  onChange={handleChange}
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm bg-slate-50/50"
+                />
+                {errors.imageUrl && (
+                  <p className="text-xs text-red-500 mt-1">{errors.imageUrl}</p>
+                )}
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
                   Description
                 </label>
                 <input
@@ -214,7 +238,7 @@ export default function Products() {
                 />
               </div>
 
-              <div className="md:col-span-2 lg:col-span-4 flex items-center space-x-3 pt-2">
+              <div className="md:col-span-2 lg:col-span-3 flex items-center space-x-3 pt-2">
                 <button
                   type="submit"
                   className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-5 py-2.5 rounded-xl transition duration-150 shadow-md shadow-indigo-600/20"
@@ -231,6 +255,7 @@ export default function Products() {
                         description: "",
                         price: "",
                         stock: "",
+                        imageUrl: "",
                       });
                     }}
                     className="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold px-4 py-2.5 rounded-xl transition"
@@ -260,9 +285,9 @@ export default function Products() {
                   key={n}
                   className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200/80 animate-pulse space-y-4"
                 >
+                  <div className="h-40 bg-slate-200 rounded-xl w-full"></div>
                   <div className="h-4 bg-slate-200 rounded w-3/4"></div>
                   <div className="h-3 bg-slate-100 rounded w-1/2"></div>
-                  <div className="h-8 bg-slate-100 rounded w-full mt-4"></div>
                 </div>
               ))}
             </div>
@@ -295,14 +320,29 @@ export default function Products() {
               {products.map((p) => (
                 <div
                   key={p._id}
-                  className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/80 hover:shadow-md transition duration-200 flex flex-col justify-between"
+                  className="bg-white rounded-2xl p-5 shadow-sm border border-slate-200/80 hover:shadow-md transition duration-200 flex flex-col justify-between overflow-hidden"
                 >
                   <div>
-                    <div className="flex justify-between items-start mb-2">
+                    {/* Product Image Box */}
+                    <div className="w-full h-48 bg-slate-100 rounded-xl overflow-hidden mb-4 flex items-center justify-center border border-slate-100">
+                      {p.imageUrl || p.image ? (
+                        <img
+                          src={p.imageUrl || p.image}
+                          alt={p.name}
+                          className="w-full h-full object-contain p-2"
+                        />
+                      ) : (
+                        <span className="text-xs text-slate-400 font-medium">
+                          No Image Available
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex justify-between items-start mb-2 gap-2">
                       <h3 className="text-base font-bold text-slate-900 line-clamp-1">
                         {p.name}
                       </h3>
-                      <span className="text-sm font-black text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-lg">
+                      <span className="text-sm font-black text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-lg shrink-0">
                         ${p.price}
                       </span>
                     </div>
@@ -314,7 +354,9 @@ export default function Products() {
                     <div className="mt-4 flex items-center space-x-2 text-xs">
                       <span className="text-slate-400">Stock Status:</span>
                       <span
-                        className={`font-semibold ${p.stock > 0 ? "text-emerald-600" : "text-rose-500"}`}
+                        className={`font-semibold ${
+                          p.stock > 0 ? "text-emerald-600" : "text-rose-500"
+                        }`}
                       >
                         {p.stock > 0 ? `${p.stock} available` : "Out of Stock"}
                       </span>
