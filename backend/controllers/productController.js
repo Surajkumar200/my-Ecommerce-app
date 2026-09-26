@@ -3,13 +3,14 @@ import Product from '../models/Product.js';
 // Create Product
 export const createProduct = async (req, res) => {
     try {
-        const { name, description, price, stock } = req.body;
+        const { name, description, price, stock, imageUrl } = req.body;
 
         const product = await Product.create({
             name,
             description,
             price,
             stock,
+            imageUrl: imageUrl || "",
             user: req.user.id,
         });
 
@@ -51,12 +52,13 @@ export const updateProduct = async (req, res) => {
             return res.status(404).json({ message: 'Product not found' });
         }
 
-        const { name, description, price, stock } = req.body;
+        const { name, description, price, stock, imageUrl } = req.body;
 
         product.name = name ?? product.name;
         product.description = description ?? product.description;
         product.price = price ?? product.price;
         product.stock = stock ?? product.stock;
+        product.imageUrl = imageUrl ?? product.imageUrl;
 
         const updatedProduct = await product.save();
         return res.status(200).json(updatedProduct);
