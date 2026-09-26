@@ -1,54 +1,56 @@
-import React, { createContext, useState, useEffect } from "react";
-import api, { setAccessToken } from "../api/axiosInstance";
+import React, { createContext, useContext, useState, useEffect } from "react";
 
-export const AuthContext = createContext();
+const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // 1. On initial load/refresh, check localStorage for the token
   useEffect(() => {
-    const initAuth = async () => {
-      try {
-        const res = await api.post("/auth/refresh-token");
-        setAccessToken(res.data.accessToken);
+    const initializeAuth = async () => {
+      const storedToken = localStorage.getItem("authToken");
 
-        const userRes = await api.get("/auth/me");
-        setUser(userRes.data);
-      } catch (err) {
-        setUser(null);
-      } finally {
-        setLoading(false);
+      if (storedToken) {
+        try {
+          // Optional: Verify token with backend or decode stored user details
+          // const response = await fetch('/api/me', { headers: { Authorization: `Bearer ${storedToken}` } });
+          // const userData = await response.json();
+
+          // For demonstration, we load user state from stored token/user data:
+          const storedUser = JSON.parse(localStorage.getItem("userData"));
+          setUser(storedUser);
+        } catch (error) {
+          console.error("Failed to restore session:", error);
+          localStorage.removeItem("authToken");
+          localStorage.removeItem("userData");
+        }
       }
+      setLoading(false);
     };
 
-    initAuth();
+    initializeAuth();
   }, []);
 
-  const login = async (email, password) => {
-    const res = await api.post("/auth/login", { email, password });
-    setAccessToken(res.data.accessToken);
-    setUser(res.data.user);
+  // 2. Login function: Save token to localStorage and update state
+  const login = (token, userData) => {
+    localStorage.setItem("authToken", token);
+    localStorage.setItem("userData", JSON.stringify(userData));
+    setUser(userData);
   };
 
-  const logout = async () => {
-    try {
-      await api.post("/auth/logout");
-    } finally {
-      setAccessToken("");
-      setUser(null);
-    }
+  // 3. Logout function: Clear localStorage and reset state
+  const logout = () => {
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("userData");
+    setUser(null);
   };
 
   return (
     <AuthContext.Provider value={{ user, login, logout, loading }}>
-      {loading ? (
-        <div className="min-h-screen flex items-center justify-center bg-slate-900">
-          <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
-        </div>
-      ) : (
-        children
-      )}
+      {!loading && children}
     </AuthContext.Provider>
   );
 };
+
+export const useAuth = () => useContext(AuthContext);
